@@ -959,12 +959,56 @@
     <script>
         (function () {
             const tabs = document.querySelectorAll('#langTabs button[data-bs-toggle="pill"]');
+            const tabByLanguage = {
+                pt: document.querySelector('#pt-tab'),
+                en: document.querySelector('#en-tab')
+            };
+
+            function getLanguageFromHash(hash) {
+                if (hash.startsWith('#en-')) return 'en';
+                if (hash.startsWith('#pt-')) return 'pt';
+                return null;
+            }
+
+            function setDocumentLanguage(activeLang) {
+                document.documentElement.lang = activeLang === 'en' ? 'en' : 'pt-BR';
+            }
+
+            function showLanguageTab(language) {
+                const tabButton = tabByLanguage[language];
+                if (!tabButton) return;
+                const tab = bootstrap.Tab.getOrCreateInstance(tabButton);
+                tab.show();
+            }
+
+            function scrollToHashTarget(hash) {
+                const target = document.querySelector(hash);
+                if (!target) return;
+                requestAnimationFrame(function () {
+                    target.scrollIntoView({ behavior: 'auto', block: 'start' });
+                });
+            }
+
+            function applyHashNavigation() {
+                const hash = window.location.hash;
+                if (!hash) return;
+                const language = getLanguageFromHash(hash);
+                if (language) {
+                    showLanguageTab(language);
+                    setDocumentLanguage(language);
+                }
+                scrollToHashTarget(hash);
+            }
+
             tabs.forEach(function (tab) {
                 tab.addEventListener('shown.bs.tab', function (event) {
                     const target = event.target.getAttribute('data-bs-target');
-                    document.documentElement.lang = target === '#en' ? 'en' : 'pt-BR';
+                    setDocumentLanguage(target === '#en' ? 'en' : 'pt');
                 });
             });
+
+            applyHashNavigation();
+            window.addEventListener('hashchange', applyHashNavigation);
         })();
     </script>
 </body>
